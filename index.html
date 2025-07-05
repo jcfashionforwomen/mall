@@ -45,19 +45,22 @@
     </script>
 
   <!-- CONTENT SECTION -->
-    <div id="3"></div>
-    
-    <script>
-        load("content.html");
-        function load(url)
-        {
-            req = new XMLHttpRequest();
-            req.open("GET", url, false);
-            req.send(null);
-            document.getElementById(3).innerHTML = req.responseText;
-        }
-    </script>
+<div id="3"></div>
+<script>
+    function loadContentHTML(url, callback) {
+        var req = new XMLHttpRequest();
+        req.open("GET", url, false); // same synchronous style
+        req.send(null);
+        document.getElementById(3).innerHTML = req.responseText;
+        if (callback) callback();
+    }
 
+    loadContentHTML("content.html", function() {
+        var script = document.createElement("script");
+        script.src = "content.js";
+        document.body.appendChild(script);
+    });
+</script>
 
    <!-- COMMENT SECTION -->
 <div id="4"></div>
@@ -118,8 +121,7 @@
 </script>
 <!-- slider JS ENDS -->
 
-<!-- content JS -->
-<script src="content.js"></script>
+<!--JS -->
 <script src="header.js"></script>
 <script src="comment.js"></script>
 <script src="footer.js"></script>
