@@ -3,61 +3,103 @@ let currentIndex = 0;
 const itemsPerPage = 10;
 let selectedCategory = "all";
 
-// Console cookie for debugging
-console.log(document.cookie);
+// Wait until all required HTML elements are loaded into the DOM
+function waitForElements() {
+  const dropdown = document.getElementById("categoryDropdown");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
+  const badge = document.getElementById("badge");
+  const containerClothing = document.getElementById("containerClothing");
+  const containerAccessories = document.getElementById("containerAccessories");
 
-// 🔧 Get cookie value by name
-function getCookieValue(key) {
-  const cookies = document.cookie.split(";");
-  for (let cookie of cookies) {
-    const [k, v] = cookie.trim().split("=");
-    if (k === key) return v;
+  if (dropdown && loadMoreBtn && badge && containerClothing && containerAccessories) {
+    initContent(); // Run main logic
+  } else {
+    setTimeout(waitForElements, 100); // Retry until loaded
   }
-  return null;
 }
 
-// ✅ Create individual product card
+function initContent() {
+  console.log(document.cookie);
+
+  // Add event listeners after DOM elements are confirmed
+  document.getElementById("categoryDropdown").addEventListener("change", function () {
+    selectedCategory = this.value;
+    currentIndex = 0;
+    clearContainers();
+    renderNextBatch();
+  });
+
+  document.getElementById("loadMoreBtn").addEventListener("click", renderNextBatch);
+
+  // Fetch product data from backend
+  let httpRequest = new XMLHttpRequest();
+  httpRequest.onreadystatechange = function () {
+    if (this.readyState === 4) {
+      if (this.status === 200) {
+        contentTitle = JSON.parse(this.responseText);
+
+        // Set badge if cookie exists
+        if (document.cookie.indexOf(",counter=") >= 0) {
+          var counter = document.cookie.split(",")[1].split("=")[1];
+          document.getElementById("badge").innerHTML = counter;
+        }
+
+        populateCategories();
+        renderNextBatch();
+      } else {
+        console.log("call failed!");
+      }
+    }
+  };
+
+  httpRequest.open(
+    "GET",
+    "https://6856d9ca1789e182b37f3392.mockapi.io/productsapi/products",
+    true
+  );
+  httpRequest.send();
+}
+
+// Dynamically create a product box element
 function dynamicClothingSection(ob) {
-  const boxDiv = document.createElement("div");
+  let boxDiv = document.createElement("div");
   boxDiv.id = "box";
 
-  const boxLink = document.createElement("a");
-  boxLink.href = "contentDetails.html?" + ob.id; // relative link (avoid `/` if using GitHub Pages)
+  let boxLink = document.createElement("a");
+  boxLink.href = "/contentDetails.html?" + ob.id;
 
-  const imgTag = document.createElement("img");
+  let imgTag = document.createElement("img");
   imgTag.src = ob.preview;
 
-  const detailsDiv = document.createElement("div");
+  let detailsDiv = document.createElement("div");
   detailsDiv.id = "details";
 
-  const h3 = document.createElement("h3");
+  let h3 = document.createElement("h3");
   h3.textContent = ob.name;
 
-  const h4 = document.createElement("h4");
+  let h4 = document.createElement("h4");
   h4.textContent = ob.brand;
 
-  const h2 = document.createElement("h2");
-  h2.textContent = "Rs " + ob.price;
+  let h2 = document.createElement("h2");
+  h2.textContent = "rs " + ob.price;
 
-  detailsDiv.append(h3, h4, h2);
-  boxLink.append(imgTag, detailsDiv);
   boxDiv.appendChild(boxLink);
+  boxLink.appendChild(imgTag);
+  boxLink.appendChild(detailsDiv);
+  detailsDiv.appendChild(h3);
+  detailsDiv.appendChild(h4);
+  detailsDiv.appendChild(h2);
 
   return boxDiv;
 }
 
-// DOM references
-const containerClothing = document.getElementById("containerClothing");
-const containerAccessories = document.getElementById("containerAccessories");
-const loadMoreBtn = document.getElementById("loadMoreBtn");
-
-// 🔄 Clear product lists
+// Clear product containers
 function clearContainers() {
-  containerClothing.innerHTML = "";
-  containerAccessories.innerHTML = "";
+  document.getElementById("containerClothing").innerHTML = "";
+  document.getElementById("containerAccessories").innerHTML = "";
 }
 
-// ➕ Render next set of items
+// Render the next batch of products
 function renderNextBatch() {
   const filtered = selectedCategory === "all"
     ? contentTitle
@@ -69,23 +111,23 @@ function renderNextBatch() {
   const slice = filtered.slice(currentIndex, end);
 
   slice.forEach(item => {
-    const card = dynamicClothingSection(item);
+    const element = dynamicClothingSection(item);
     if (item.isAccessory) {
-      containerAccessories.appendChild(card);
+      document.getElementById("containerAccessories").appendChild(element);
     } else {
-      containerClothing.appendChild(card);
+      document.getElementById("containerClothing").appendChild(element);
     }
   });
 
   currentIndex = end;
+
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
   loadMoreBtn.style.display = currentIndex >= filtered.length ? "none" : "block";
 }
 
-// 📂 Fill category dropdown
+// Fill the category dropdown with unique values
 function populateCategories() {
   const dropdown = document.getElementById("categoryDropdown");
-  dropdown.innerHTML = "";
-
   const categories = [...new Set(contentTitle.map(item => item.category.toLowerCase()))];
   categories.unshift("all");
 
@@ -97,44 +139,5 @@ function populateCategories() {
   });
 }
 
-// 📦 Event: Category changed
-document.getElementById("categoryDropdown").addEventListener("change", function () {
-  selectedCategory = this.value;
-  currentIndex = 0;
-  clearContainers();
-  renderNextBatch();
-});
-
-// 📦 Event: Load More button
-loadMoreBtn.addEventListener("click", renderNextBatch);
-
-// 🌐 Fetch from API
-const httpRequest = new XMLHttpRequest();
-httpRequest.onreadystatechange = function () {
-  if (this.readyState === 4) {
-    if (this.status === 200) {
-      try {
-        contentTitle = JSON.parse(this.responseText);
-
-        const counter = getCookieValue("counter");
-        if (counter) {
-          document.getElementById("badge").textContent = counter;
-        }
-
-        populateCategories();
-        renderNextBatch();
-      } catch (err) {
-        console.error("❌ JSON Parse Error:", err);
-      }
-    } else {
-      console.error("❌ API Request Failed - Status:", this.status);
-    }
-  }
-};
-
-httpRequest.open(
-  "GET",
-  "https://6856d9ca1789e182b37f3392.mockapi.io/productsapi/products",
-  true
-);
-httpRequest.send();
+// Start checking once DOM is ready
+document.addEventListener("DOMContentLoaded", waitForElements);
