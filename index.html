@@ -44,19 +44,24 @@
         }
     </script>
 
-    <!-- CONTENT SECTION -->
-    <div id="3"></div>
-    
-    <script>
-        load("content.html");
-        function load(url)
-        {
-            req = new XMLHttpRequest();
-            req.open("GET", url, false);
-            req.send(null);
-            document.getElementById(3).innerHTML = req.responseText;
-        }
-    </script>
+   <!-- CONTENT SECTION -->
+<div id="3"></div>
+<script>
+    function load(url, callback) {
+        const req = new XMLHttpRequest();
+        req.open("GET", url, false); // still using sync to match your style
+        req.send(null);
+        document.getElementById(3).innerHTML = req.responseText;
+        if (callback) callback();
+    }
+
+    load("content.html", function() {
+        const script = document.createElement("script");
+        script.src = "content.js";
+        document.body.appendChild(script);
+    });
+</script>
+
 
    <!-- COMMENT SECTION -->
 <div id="4"></div>
