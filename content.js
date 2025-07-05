@@ -3,29 +3,40 @@ let currentIndex = 0;
 const itemsPerPage = 10;
 let selectedCategory = "all";
 
+// Console cookie for debugging
 console.log(document.cookie);
 
-// Helper: Create a product card
+// 🔧 Get cookie value by name
+function getCookieValue(key) {
+  const cookies = document.cookie.split(";");
+  for (let cookie of cookies) {
+    const [k, v] = cookie.trim().split("=");
+    if (k === key) return v;
+  }
+  return null;
+}
+
+// ✅ Create individual product card
 function dynamicClothingSection(ob) {
-  let boxDiv = document.createElement("div");
+  const boxDiv = document.createElement("div");
   boxDiv.id = "box";
 
-  let boxLink = document.createElement("a");
-  boxLink.href = "/contentDetails.html?" + ob.id;
+  const boxLink = document.createElement("a");
+  boxLink.href = "contentDetails.html?" + ob.id; // relative link (avoid `/` if using GitHub Pages)
 
-  let imgTag = document.createElement("img");
+  const imgTag = document.createElement("img");
   imgTag.src = ob.preview;
 
-  let detailsDiv = document.createElement("div");
+  const detailsDiv = document.createElement("div");
   detailsDiv.id = "details";
 
-  let h3 = document.createElement("h3");
+  const h3 = document.createElement("h3");
   h3.textContent = ob.name;
 
-  let h4 = document.createElement("h4");
+  const h4 = document.createElement("h4");
   h4.textContent = ob.brand;
 
-  let h2 = document.createElement("h2");
+  const h2 = document.createElement("h2");
   h2.textContent = "Rs " + ob.price;
 
   detailsDiv.append(h3, h4, h2);
@@ -35,17 +46,18 @@ function dynamicClothingSection(ob) {
   return boxDiv;
 }
 
-// Containers
-let containerClothing = document.getElementById("containerClothing");
-let containerAccessories = document.getElementById("containerAccessories");
+// DOM references
+const containerClothing = document.getElementById("containerClothing");
+const containerAccessories = document.getElementById("containerAccessories");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
 
-// Clear containers before re-render
+// 🔄 Clear product lists
 function clearContainers() {
   containerClothing.innerHTML = "";
   containerAccessories.innerHTML = "";
 }
 
-// Load next batch of items
+// ➕ Render next set of items
 function renderNextBatch() {
   const filtered = selectedCategory === "all"
     ? contentTitle
@@ -57,24 +69,22 @@ function renderNextBatch() {
   const slice = filtered.slice(currentIndex, end);
 
   slice.forEach(item => {
-    const element = dynamicClothingSection(item);
+    const card = dynamicClothingSection(item);
     if (item.isAccessory) {
-      containerAccessories.appendChild(element);
+      containerAccessories.appendChild(card);
     } else {
-      containerClothing.appendChild(element);
+      containerClothing.appendChild(card);
     }
   });
 
   currentIndex = end;
-
-  const loadMoreBtn = document.getElementById("loadMoreBtn");
   loadMoreBtn.style.display = currentIndex >= filtered.length ? "none" : "block";
 }
 
-// Populate category dropdown
+// 📂 Fill category dropdown
 function populateCategories() {
   const dropdown = document.getElementById("categoryDropdown");
-  dropdown.innerHTML = ""; // Clear existing options
+  dropdown.innerHTML = "";
 
   const categories = [...new Set(contentTitle.map(item => item.category.toLowerCase()))];
   categories.unshift("all");
@@ -87,17 +97,7 @@ function populateCategories() {
   });
 }
 
-// Parse cookie string to get value by key
-function getCookieValue(key) {
-  const cookies = document.cookie.split(";");
-  for (let cookie of cookies) {
-    const [k, v] = cookie.trim().split("=");
-    if (k === key) return v;
-  }
-  return null;
-}
-
-// Event Listeners
+// 📦 Event: Category changed
 document.getElementById("categoryDropdown").addEventListener("change", function () {
   selectedCategory = this.value;
   currentIndex = 0;
@@ -105,9 +105,10 @@ document.getElementById("categoryDropdown").addEventListener("change", function 
   renderNextBatch();
 });
 
-document.getElementById("loadMoreBtn").addEventListener("click", renderNextBatch);
+// 📦 Event: Load More button
+loadMoreBtn.addEventListener("click", renderNextBatch);
 
-// Fetch data from API
+// 🌐 Fetch from API
 const httpRequest = new XMLHttpRequest();
 httpRequest.onreadystatechange = function () {
   if (this.readyState === 4) {
@@ -122,11 +123,11 @@ httpRequest.onreadystatechange = function () {
 
         populateCategories();
         renderNextBatch();
-      } catch (e) {
-        console.error("JSON parse error", e);
+      } catch (err) {
+        console.error("❌ JSON Parse Error:", err);
       }
     } else {
-      console.error("API call failed with status:", this.status);
+      console.error("❌ API Request Failed - Status:", this.status);
     }
   }
 };
@@ -137,4 +138,3 @@ httpRequest.open(
   true
 );
 httpRequest.send();
-
