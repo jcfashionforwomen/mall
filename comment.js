@@ -1,6 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
+function waitForReviewElements() {
   const container = document.getElementById("reviewContainer");
   const wrapper = document.getElementById("reviewsWrapper");
+
+  if (!container || !wrapper) {
+    setTimeout(waitForReviewElements, 100); // Retry every 100ms
+    return;
+  }
+
   let scrollSpeed = 0.8;
   let isPaused = false;
 
@@ -35,18 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchReviews() {
     try {
-      // Replace this with real API endpoint if needed
-      // const response = await fetch('https://your-api/reviews');
-      // const data = await response.json();
-      renderReviews(reviewsData); // Using mock data for now
+      // const response = await fetch("your-api-endpoint");
+      // const reviews = await response.json();
+      renderReviews(reviewsData);
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      renderReviews(reviewsData); // Fallback to mock data
+      renderReviews(reviewsData); // fallback
     }
   }
 
+  // Initialize reviews
   fetchReviews();
 
+  // Auto scroll
   function autoScroll() {
     if (!isPaused) {
       container.scrollLeft += scrollSpeed;
@@ -57,11 +64,11 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(autoScroll);
   }
 
-  // Pause on hover
-  container.addEventListener("mouseenter", () => (isPaused = true));
-  container.addEventListener("mouseleave", () => (isPaused = false));
+  // Hover pause
+  container.addEventListener("mouseenter", () => isPaused = true);
+  container.addEventListener("mouseleave", () => isPaused = false);
 
-  // Mouse drag support
+  // Manual drag scroll
   let isDragging = false;
   let startX, scrollLeft;
 
@@ -75,8 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
   container.addEventListener("mousemove", (e) => {
     if (!isDragging) return;
     const x = e.pageX - container.offsetLeft;
-    const walk = (x - startX) * 2;
-    container.scrollLeft = scrollLeft - walk;
+    container.scrollLeft = scrollLeft - (x - startX) * 2;
   });
 
   container.addEventListener("mouseup", () => {
@@ -85,10 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   container.addEventListener("mouseleave", () => {
-    if (isDragging) {
-      isDragging = false;
-      container.style.cursor = "grab";
-    }
+    isDragging = false;
+    container.style.cursor = "grab";
   });
 
   // Touch support
@@ -101,8 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
   container.addEventListener("touchmove", (e) => {
     if (!isDragging) return;
     const x = e.touches[0].pageX - container.offsetLeft;
-    const walk = (x - startX) * 2;
-    container.scrollLeft = scrollLeft - walk;
+    container.scrollLeft = scrollLeft - (x - startX) * 2;
   });
 
   container.addEventListener("touchend", () => {
@@ -110,4 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   autoScroll();
+}
+
+// Wait for DOM and injected comment.html
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(waitForReviewElements, 100);
 });
