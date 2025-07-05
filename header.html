@@ -7,44 +7,91 @@
   <title>JC Fashion For Women - Header</title>
 
   <!-- Favicon -->
- <link rel="icon" href="https://lh3.googleusercontent.com/a/ACg8ocKDOdNcjUMbB_xGsiedFpTSHeKid9YHn04B8U2fMayphgRAiKQ=s288-c-no" type="image/gif" sizes="16x16">
+  <link rel="icon" href="https://lh3.googleusercontent.com/a/ACg8ocKDOdNcjUMbB_xGsiedFpTSHeKid9YHn04B8U2fMayphgRAiKQ=s288-c-no" type="image/gif" sizes="16x16">
 
-  <!-- CSS -->
+  <!-- Fonts & Styles -->
   <link rel="stylesheet" href="css/header.css"/>
   <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet"/>
-</head>
-<style>
-  /* RESPONSIVE TWEAKS */
-@media (max-width: 768px) {
-    .nav-container {
+
+  <style>
+    @media (max-width: 768px) {
+      .nav-container {
         flex-direction: column;
         align-items: flex-start;
-    }
+      }
 
-    .product-grid {
+      .product-grid {
         grid-template-columns: 1fr;
-    }
+      }
 
-    h1, h2, h3 {
+      h1, h2, h3 {
         font-size: 18px;
-    }
+      }
 
-    .nav-item, p, span {
+      .nav-item, p, span {
         font-size: 14px;
-    }
+      }
 
-    footer {
+      footer {
         font-size: 14px;
         padding: 15px 10px;
+      }
     }
-}
-</style>
+
+    #badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: red;
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      padding: 2px 6px;
+      font-weight: bold;
+    }
+
+    .sidebar {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #fff;
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .sidebar.active {
+      display: block;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-menu a {
+      display: block;
+      margin: 10px 0;
+      font-size: 18px;
+      color: #000;
+      text-decoration: none;
+    }
+
+    .sidebar-menu a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
 <body>
 <header>
   <section>
     <div id="container">
-
-      <!-- LOGO + SHOP NAME -->
+      <!-- Logo -->
       <div id="shopWrapper">
         <img src="logo.svg" alt="JC Logo" id="logo"/>
         <div id="shopName">
@@ -52,7 +99,7 @@
         </div>
       </div>
 
-      <!-- COLLECTION LINKS (Desktop Only) -->
+      <!-- Navigation -->
       <div id="collection">
         <a href="clothing.html">CLOTHING</a>
         <a href="about.html">ABOUT US</a>
@@ -62,12 +109,9 @@
         <a href="FAQ.html">FAQ</a>
       </div>
 
-      <!-- CART + MENU -->
+      <!-- Cart & Menu -->
       <div id="rightMenu">
-        <!-- MENU -->
         <div id="menuToggle" onclick="toggleSidebar()">☰</div>
-
-        <!-- CART -->
         <div id="user">
           <a href="cart.html" style="font-size: 24px; position: relative;">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="black" viewBox="0 0 24 24">
@@ -84,24 +128,41 @@
   </section>
 </header>
 
-<!-- SIDEBAR (Mobile Menu) -->
+<!-- Mobile Sidebar -->
 <div id="mobileSidebar" class="sidebar">
   <div class="sidebar-header">
-    <a href="index.html" target="_blank" style="color: black; text-decoration: none;">
-  <b>JC</b> FASHION FOR WOMEN
-</a>
+    <a href="index.html" style="color: black; text-decoration: none;"><b>JC</b> FASHION FOR WOMEN</a>
     <button id="closeSidebar">&times;</button>
   </div>
   <nav class="sidebar-menu">
     <a href="clothing.html">CLOTHING</a>
-        <a href="about.html">ABOUT US</a>
-        <a href="Support & Policy.html">POLICY</a>
-        <a href="sizeguide.html">SIZE GUIDE</a>
-        <a href="contactus.html">CONTACT US</a>
-        <a href="FAQ.html">FAQ</a>
+    <a href="about.html">ABOUT US</a>
+    <a href="Support & Policy.html">POLICY</a>
+    <a href="sizeguide.html">SIZE GUIDE</a>
+    <a href="contactus.html">CONTACT US</a>
+    <a href="FAQ.html">FAQ</a>
   </nav>
 </div>
 
+<!-- JS for sidebar toggle -->
+<script>
+  function toggleSidebar() {
+    document.getElementById("mobileSidebar").classList.add("active");
+  }
+
+  document.getElementById("closeSidebar").addEventListener("click", () => {
+    document.getElementById("mobileSidebar").classList.remove("active");
+  });
+
+  // Optional: Load badge count from cookie
+  const badgeEl = document.getElementById("badge");
+  const cookies = document.cookie.split("; ");
+  for (const c of cookies) {
+    const [key, val] = c.split("=");
+    if (key === "counter") badgeEl.textContent = val;
+  }
+</script>
+
 </body>
-<script src="header.js"></script>
 </html>
+
