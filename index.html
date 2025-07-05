@@ -2,30 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>JC Fashion For Women</title>
 
   <!-- Favicon -->
   <link rel="icon" href="https://lh3.googleusercontent.com/a/ACg8ocKDOdNcjUMbB_xGsiedFpTSHeKid9YHn04B8U2fMayphgRAiKQ=s288-c-no" type="image/gif" sizes="16x16" />
 
-  <!-- Google Fonts -->
+  <!-- Fonts & Icons -->
+  <script src="https://kit.fontawesome.com/99fca7ee63.js" crossorigin="anonymous"></script>
   <link href="https://fonts.googleapis.com/css?family=Lato&display=swap" rel="stylesheet" />
 
-  <!-- Font Awesome Kit -->
-  <script src="https://kit.fontawesome.com/99fca7ee63.js" crossorigin="anonymous"></script>
-
-  <!-- jQuery & Slick Slider CSS -->
-  <script src="js/jQuery3.4.1.js"></script>
+  <!-- Slick Slider CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick-theme.min.css" />
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 
   <style>
     body {
       margin: 0;
       overflow-x: hidden;
     }
-    #5 {
+    #footerContainer {
       width: 100%;
       overflow-x: hidden;
     }
@@ -36,46 +36,45 @@
     }
   </style>
 </head>
-
 <body>
-  <!-- Modular Sections -->
-  <div id="1"></div> <!-- Header -->
-  <div id="2"></div> <!-- Slider -->
-  <div id="3"></div> <!-- Content -->
-  <div id="4"></div> <!-- Comment -->
-  <div id="5"></div> <!-- Footer -->
 
-  <!-- Load Modular HTML Asynchronously -->
+  <!-- Modular Sections -->
+  <div id="headerContainer"></div>
+  <div id="sliderContainer"></div>
+  <div id="contentContainer"></div>
+  <div id="commentContainer"></div>
+  <div id="footerContainer"></div>
+
+  <!-- Content Loader Script -->
   <script>
-    function load(id, url) {
-      const req = new XMLHttpRequest();
-      req.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-          document.getElementById(id).innerHTML = this.responseText;
-        }
-      };
-      req.open("GET", url, true); // async = true
-      req.send();
+    function loadHTML(id, url) {
+      fetch(url)
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById(id).innerHTML = data;
+        })
+        .catch(err => {
+          console.error("Error loading " + url, err);
+        });
     }
 
-    // Load on page ready
-    window.addEventListener("DOMContentLoaded", () => {
-      load("1", "header.html");
-      load("2", "slider.html");
-      load("3", "content.html");
-      load("4", "comment.html");
-      load("5", "footer.html");
+    document.addEventListener("DOMContentLoaded", function () {
+      loadHTML("headerContainer", "header.html");
+      loadHTML("sliderContainer", "slider.html");
+      loadHTML("contentContainer", "content.html");
+      loadHTML("commentContainer", "comment.html");
+      loadHTML("footerContainer", "footer.html");
     });
   </script>
 
-  <!-- Slider JS -->
+  <!-- Slick Slider Script -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const checkSlider = setInterval(() => {
-        const slider = document.getElementById("containerSlider");
-        if (slider && typeof $(slider).slick === "function") {
-          $(slider).slick({
+    document.addEventListener("DOMContentLoaded", () => {
+      // delay to ensure slider HTML is loaded
+      setTimeout(() => {
+        if ($('#containerSlider').length) {
+          $('#containerSlider').slick({
             dots: true,
             infinite: true,
             slidesToShow: 1,
@@ -83,17 +82,15 @@
             autoplay: true,
             autoplaySpeed: 1500,
           });
-          clearInterval(checkSlider);
         }
-      }, 100);
+      }, 500); // wait for content to be injected
     });
   </script>
 
-  <!-- Custom JS Files -->
+  <!-- Custom Scripts -->
   <script src="content.js"></script>
   <script src="header.js"></script>
   <script src="comment.js"></script>
   <script src="footer.js"></script>
 </body>
 </html>
-
