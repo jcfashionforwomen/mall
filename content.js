@@ -5,6 +5,7 @@ let selectedCategory = "all";
 
 console.log(document.cookie);
 
+// Helper: Create a product card
 function dynamicClothingSection(ob) {
   let boxDiv = document.createElement("div");
   boxDiv.id = "box";
@@ -19,38 +20,37 @@ function dynamicClothingSection(ob) {
   detailsDiv.id = "details";
 
   let h3 = document.createElement("h3");
-  h3.appendChild(document.createTextNode(ob.name));
+  h3.textContent = ob.name;
 
   let h4 = document.createElement("h4");
-  h4.appendChild(document.createTextNode(ob.brand));
+  h4.textContent = ob.brand;
 
   let h2 = document.createElement("h2");
-  h2.appendChild(document.createTextNode("rs " + ob.price));
+  h2.textContent = "Rs " + ob.price;
 
+  detailsDiv.append(h3, h4, h2);
+  boxLink.append(imgTag, detailsDiv);
   boxDiv.appendChild(boxLink);
-  boxLink.appendChild(imgTag);
-  boxLink.appendChild(detailsDiv);
-  detailsDiv.appendChild(h3);
-  detailsDiv.appendChild(h4);
-  detailsDiv.appendChild(h2);
 
   return boxDiv;
 }
 
+// Containers
 let containerClothing = document.getElementById("containerClothing");
 let containerAccessories = document.getElementById("containerAccessories");
 
+// Clear containers before re-render
 function clearContainers() {
   containerClothing.innerHTML = "";
   containerAccessories.innerHTML = "";
 }
 
+// Load next batch of items
 function renderNextBatch() {
-  // Filter content based on selected category
   const filtered = selectedCategory === "all"
     ? contentTitle
     : contentTitle.filter(item =>
-        item.category.toLowerCase().includes(selectedCategory.toLowerCase()) // Use category field for filtering
+        item.category.toLowerCase().includes(selectedCategory.toLowerCase())
       );
 
   const end = currentIndex + itemsPerPage;
@@ -67,33 +67,37 @@ function renderNextBatch() {
 
   currentIndex = end;
 
-  // Hide or show the "Load More" button
   const loadMoreBtn = document.getElementById("loadMoreBtn");
-  if (currentIndex >= filtered.length) {
-    loadMoreBtn.style.display = "none";
-  } else {
-    loadMoreBtn.style.display = "block";
-  }
+  loadMoreBtn.style.display = currentIndex >= filtered.length ? "none" : "block";
 }
 
+// Populate category dropdown
 function populateCategories() {
   const dropdown = document.getElementById("categoryDropdown");
-  
-  // Get unique categories from the products
-  const categories = [...new Set(contentTitle.map(item => item.category.toLowerCase()))];
+  dropdown.innerHTML = ""; // Clear existing options
 
-  // Add 'all' category to show all products
+  const categories = [...new Set(contentTitle.map(item => item.category.toLowerCase()))];
   categories.unshift("all");
 
   categories.forEach(cat => {
     const option = document.createElement("option");
     option.value = cat;
-    option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1); // Capitalize first letter
+    option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
     dropdown.appendChild(option);
   });
 }
 
-// Event Listener: Category change
+// Parse cookie string to get value by key
+function getCookieValue(key) {
+  const cookies = document.cookie.split(";");
+  for (let cookie of cookies) {
+    const [k, v] = cookie.trim().split("=");
+    if (k === key) return v;
+  }
+  return null;
+}
+
+// Event Listeners
 document.getElementById("categoryDropdown").addEventListener("change", function () {
   selectedCategory = this.value;
   currentIndex = 0;
@@ -101,25 +105,28 @@ document.getElementById("categoryDropdown").addEventListener("change", function 
   renderNextBatch();
 });
 
-// Event Listener: Load more
 document.getElementById("loadMoreBtn").addEventListener("click", renderNextBatch);
 
-// Backend data call
-let httpRequest = new XMLHttpRequest();
+// Fetch data from API
+const httpRequest = new XMLHttpRequest();
 httpRequest.onreadystatechange = function () {
   if (this.readyState === 4) {
     if (this.status === 200) {
-      contentTitle = JSON.parse(this.responseText);
+      try {
+        contentTitle = JSON.parse(this.responseText);
 
-      if (document.cookie.indexOf(",counter=") >= 0) {
-        var counter = document.cookie.split(",")[1].split("=")[1];
-        document.getElementById("badge").innerHTML = counter;
+        const counter = getCookieValue("counter");
+        if (counter) {
+          document.getElementById("badge").textContent = counter;
+        }
+
+        populateCategories();
+        renderNextBatch();
+      } catch (e) {
+        console.error("JSON parse error", e);
       }
-
-      populateCategories(); // Populate category dropdown
-      renderNextBatch(); // Render first batch of products
     } else {
-      console.log("call failed!");
+      console.error("API call failed with status:", this.status);
     }
   }
 };
@@ -130,3 +137,4 @@ httpRequest.open(
   true
 );
 httpRequest.send();
+
